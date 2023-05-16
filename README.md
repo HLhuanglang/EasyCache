@@ -2,7 +2,7 @@
 
 ## 概述
 
-EasyCache主要用于研究缓存技术的原理和编码实现。
+EasyCache主要用于研究缓存技术的原理和编码实现
 - local_cache分支采用cpp实现，作为程序的一部分
 - remote_cache采用go实现，可单独部署，作为缓存服务与逻辑服务进行通信。
 
@@ -55,3 +55,14 @@ EasyCache主要用于研究缓存技术的原理和编码实现。
 Write Behind Caching 模式与 Read/Write Through 模式类似，也由数据存储服务来管理 cache 和 DB 的读写。不同点是，数据更新时，Read/write Through 是同步更新 cache 和 DB，而 Write Behind Caching 则是只更新缓存，不直接更新 DB，而是改为异步批量的方式来更新 DB。**该模式的特点是，数据存储的写性能最高，非常适合一些变更特别频繁的业务，特别是可以合并写请求的业务**，比如对一些计数业务，一条 Feed 被点赞 1万 次，如果更新 1万 次 DB 代价很大，而合并成一次请求直接加 1万，则是一个非常轻量的操作。但**这种模型有个显著的缺点，即数据的一致性变差，甚至在一些极端场景下可能会丢失数据**。比如系统 Crash、机器宕机时，如果有数据还没保存到 DB，则会存在丢失的风险。所以这种读写模式适合变更频率特别高，但对一致性要求不太高的业务，这样写操作可以异步批量写入 DB，减小 DB 压力。<font color='red'>核心点在于异步批量更新DB数据</font>
 
 <img src="https://hl1998-1255562705.cos.ap-shanghai.myqcloud.com/Img/image-20230221190301284.png" alt="image-20230221190301284" style="zoom:50%;" />
+
+## 缓存经典问题
+
+<img src="https://hl1998-1255562705.cos.ap-shanghai.myqcloud.com/Img/image-20230221192038522.png" alt="image-20230221192038522" style="zoom:67%;" />
+
+## 参考项目/文章/论文
+
+[后续补充]
+
+## 授权许可
+本项目采用 MIT 开源授权许可证，完整的授权说明已放置在 [LICENSE](LICENSE) 文件中。
