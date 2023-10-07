@@ -3,8 +3,8 @@
 ## 概述
 
 EasyCache主要用于研究缓存技术的原理和编码实现
-- local_cache分支采用cpp实现，作为程序的一部分
-- remote_cache采用go实现，可单独部署，作为缓存服务与逻辑服务进行通信。
+- inprocess_cache作为程序的一部分
+- remote_cache可单独部署，作为缓存服务与逻辑服务进行通信。
 
 ## 关于缓存的理解
 

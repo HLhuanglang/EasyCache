@@ -14,11 +14,11 @@ template <typename Key>
 class cache_policy {
  public:
     virtual ~cache_policy() = default;
-    virtual void insert(const Key &key) = 0;         // 插入
-    virtual void erase(const Key &key) = 0;          // 删除
-    virtual auto hit(const Key &key) -> bool = 0;    // 是否命中缓存 (lru为例,则会调整元素在缓存中的位置)
-    virtual void adjust(const Key &key) = 0;         // 调整元素位置以此跟新节点的生命周期
-    virtual auto get_update_element() -> Key & = 0;  // 需要更新的元素节点
+    virtual void insert(const Key &key) = 0;        // 插入
+    virtual void erase(const Key &key) = 0;         // 删除
+    virtual auto hit(const Key &key) -> bool = 0;   // 是否命中缓存 (lru为例,则会调整元素在缓存中的位置)
+    virtual void adjust(const Key &key) = 0;        // 调整元素位置以此跟新节点的生命周期
+    virtual auto get_update_element() -> Key & = 0; // 需要更新的元素节点
 };
 
 //-----------------------------------------------------------------------------------
@@ -37,27 +37,27 @@ class fifo_policy : public cache_policy<Key> {
     auto get_update_element() -> Key & override;
 
  private:
-    std::list<Key> fifo_index_;                                           // fifo进行操作的表
-    std::map<Key, typename std::list<Key>::const_iterator> fifo_lookup_;  // 快速定位
+    std::list<Key> m_fifo_index;                                          // fifo进行操作的表
+    std::map<Key, typename std::list<Key>::const_iterator> m_fifo_lookup; // 快速定位
 };
 
 template <typename Key>
 void fifo_policy<Key>::insert(const Key &key) {
-    fifo_index_.push_front(key);
-    fifo_lookup_[key] = fifo_index_.begin();
+    m_fifo_index.push_front(key);
+    m_fifo_lookup[key] = m_fifo_index.begin();
 }
 
 template <typename Key>
 void fifo_policy<Key>::erase(const Key &key) {
-    auto tmp = fifo_lookup_[key];
-    fifo_lookup_.erase(key);
-    fifo_index_.erase(tmp);
+    auto tmp = m_fifo_lookup[key];
+    m_fifo_lookup.erase(key);
+    m_fifo_index.erase(tmp);
 }
 
 template <typename Key>
 auto fifo_policy<Key>::hit(const Key &key) -> bool {
-    auto tmp = fifo_lookup_.find(key);
-    return static_cast<bool>(tmp != fifo_lookup_.end());
+    auto tmp = m_fifo_lookup.find(key);
+    return static_cast<bool>(tmp != m_fifo_lookup.end());
 }
 
 template <typename Key>
@@ -67,7 +67,7 @@ void fifo_policy<Key>::adjust(const Key &key) {
 
 template <typename Key>
 auto fifo_policy<Key>::get_update_element() -> Key & {
-    return fifo_index_.back();
+    return m_fifo_index.back();
 }
 
 //-----------------------------------------------------------------------------------
@@ -87,37 +87,37 @@ class lru_policy : public cache_policy<Key> {
     auto get_update_element() -> Key & override;
 
  private:
-    std::list<Key> lru_index_;
-    std::map<Key, typename std::list<Key>::const_iterator> lru_lookup_;
+    std::list<Key> m_lru_index;
+    std::map<Key, typename std::list<Key>::const_iterator> m_lru_lookup;
 };
 
 template <typename Key>
 void lru_policy<Key>::insert(const Key &key) {
-    lru_index_.push_front(key);
-    lru_lookup_[key] = lru_index_.begin();
+    m_lru_index.push_front(key);
+    m_lru_lookup[key] = m_lru_index.begin();
 }
 
 template <typename Key>
 void lru_policy<Key>::erase(const Key &key) {
-    auto tmp = lru_lookup_[key];
-    lru_index_.erase(tmp);
-    lru_lookup_.erase(key);
+    auto tmp = m_lru_lookup[key];
+    m_lru_index.erase(tmp);
+    m_lru_lookup.erase(key);
 }
 
 template <typename Key>
 auto lru_policy<Key>::hit(const Key &key) -> bool {
-    auto tmp = lru_lookup_.find(key);
-    return static_cast<bool>(tmp != lru_lookup_.end());
+    auto tmp = m_lru_lookup.find(key);
+    return static_cast<bool>(tmp != m_lru_lookup.end());
 }
 
 template <typename Key>
 void lru_policy<Key>::adjust(const Key &key) {
-    lru_index_.splice(lru_index_.begin(), lru_index_, lru_lookup_[key]);
+    m_lru_index.splice(m_lru_index.begin(), m_lru_index, m_lru_lookup[key]);
 }
 
 template <typename Key>
 auto lru_policy<Key>::get_update_element() -> Key & {
-    return lru_index_.back();
+    return m_lru_index.back();
 }
 
 //-----------------------------------------------------------------------------------
@@ -151,57 +151,57 @@ class easy_cache {
     using const_iterator = typename std::map<Key, Val>::const_iterator;
 
     explicit easy_cache(size_t max_size, const Policy<Key> policy = Policy<Key>())
-        : policy_(policy), max_cache_size_(max_size) {
+        : m_policy(policy), m_max_cache_size(max_size) {
     }
 
     // 将元素插入缓存中
     void set(const Key &key, const Val &val) {
-        std::lock_guard<std::mutex> lgmt(mtx_);
-        bool is_hit_cache = policy_.hit(key);
+        std::lock_guard<std::mutex> lgmt(m_mtx);
+        bool is_hit_cache = m_policy.hit(key);
         if (is_hit_cache) {
             // 1,命中缓存,直接调整
-            policy_.adjust(key);
+            m_policy.adjust(key);
         } else {
             // 2,未命中缓存
-            if (cache_.size() >= max_cache_size_) {
+            if (m_cache.size() >= m_max_cache_size) {
                 // 缓存队列满了,淘汰生命周期结束的节点
-                auto old = policy_.get_update_element();
-                policy_.erase(old);
-                cache_.erase(old);
-                policy_.insert(key);
-                cache_.emplace(std::make_pair(key, val));
+                auto old = m_policy.get_update_element();
+                m_policy.erase(old);
+                m_cache.erase(old);
+                m_policy.insert(key);
+                m_cache.emplace(std::make_pair(key, val));
             } else {
-                policy_.insert(key);
-                cache_.emplace(std::make_pair(key, val));
+                m_policy.insert(key);
+                m_cache.emplace(std::make_pair(key, val));
             }
         }
     }
 
     // 从缓存中取出某个元素,需要自行判断元素是否存在
     auto try_get(const Key &key) -> std::pair<Val, bool> {
-        std::lock_guard<std::mutex> lgmt(mtx_);
-        bool is_hit_cache = policy_.hit(key);
+        std::lock_guard<std::mutex> lgmt(m_mtx);
+        bool is_hit_cache = m_policy.hit(key);
         if (is_hit_cache) {
-            return {cache_[key], true};
+            return {m_cache[key], true};
         }
         return {Val(), false};
     }
 
     // 从缓存中删除某个元素
     void del(const Key &key) {
-        std::lock_guard<std::mutex> lgmt(mtx_);
-        bool is_hit_cache = policy_.hit(key);
+        std::lock_guard<std::mutex> lgmt(m_mtx);
+        bool is_hit_cache = m_policy.hit(key);
         if (is_hit_cache) {
-            policy_.erase(key);
-            cache_.erase(key);
+            m_policy.erase(key);
+            m_cache.erase(key);
         }
     }
 
  private:
-    mutable Policy<Key> policy_;  // 淘汰策略（编译时多态）
-    size_t max_cache_size_;       // 缓存最大数量
-    std::map<Key, Val> cache_;    // 实际缓存数据(不用考虑排序)
-    std::mutex mtx_;
+    mutable Policy<Key> m_policy; // 淘汰策略（编译时多态）
+    size_t m_max_cache_size;      // 缓存最大数量
+    std::map<Key, Val> m_cache;   // 实际缓存数据(不用考虑排序)
+    std::mutex m_mtx;
 };
 
-#endif  // EASY_CACHE_H_
+#endif // EASY_CACHE_H_

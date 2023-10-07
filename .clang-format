@@ -1,4 +1,4 @@
-BasedOnStyle: Google
+BasedOnStyle: LLVM
 UseTab: Never
 IndentWidth: 4
 TabWidth: 4
@@ -6,7 +6,7 @@ TabWidth: 4
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLambdasOnASingleLine: None
 
-IndentCaseLabels: false
+IndentCaseLabels: true
 ColumnLimit: 0
 AccessModifierOffset: -3
 FixNamespaceComments: true
