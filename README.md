@@ -4,7 +4,9 @@
 
 EasyCache主要用于研究缓存技术的原理和编码实现
 - inprocess_cache作为程序的一部分
-- remote_cache可单独部署，作为缓存服务与逻辑服务进行通信。
+- remote_cache
+    - 可单机部署
+    - 多机分布式部署
 
 ## 关于缓存的理解
 

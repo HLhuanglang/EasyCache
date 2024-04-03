@@ -128,10 +128,6 @@ class lfu_policy : public cache_policy<Key> {
  public:
     lfu_policy() = default;
     ~lfu_policy() = default;
-    // lfu_policy(const lfu_policy &) = default;
-    // auto operator=(const lfu_policy &) -> lfu_policy & = default;
-    // auto operator=(lfu_policy &&) noexcept -> lfu_policy & = default;
-    // lfu_policy(lfu_policy &&) noexcept = default;
 
     void insert(const Key &key) override;
     void erase(const Key &key) override;
@@ -146,6 +142,18 @@ class lfu_policy : public cache_policy<Key> {
 template <typename Key, typename Val,
           template <typename> class Policy = fifo_policy>
 class easy_cache {
+ public:
+    class result {
+     public:
+        result(Val k, bool s) : m_result(k), m_has(s) {}
+        bool has() { return m_has; }
+        Val val() { return m_result; }
+
+     private:
+        Val m_result;
+        bool m_has;
+    };
+
  public:
     using iterator = typename std::map<Key, Val>::iterator;
     using const_iterator = typename std::map<Key, Val>::const_iterator;
@@ -178,10 +186,11 @@ class easy_cache {
     }
 
     // 从缓存中取出某个元素,需要自行判断元素是否存在
-    auto try_get(const Key &key) -> std::pair<Val, bool> {
+    auto try_get(const Key &key) -> result {
         std::lock_guard<std::mutex> lgmt(m_mtx);
         bool is_hit_cache = m_policy.hit(key);
         if (is_hit_cache) {
+            m_policy.adjust(key);
             return {m_cache[key], true};
         }
         return {Val(), false};

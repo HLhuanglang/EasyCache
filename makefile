@@ -10,7 +10,7 @@ export BUILD_DIR
 
 .PHONY:default
 default:
-	echo "make [inprocess_cache|cache]"
+	echo "make [inprocess_cache|remote_cache]"
 
 .PHONY:premake
 premake:
@@ -19,3 +19,7 @@ premake:
 .PHONY:inprocess_cache
 inprocess_cache: premake
 	make -C inprocess_cache
+
+.PHONY:remote_cache
+remote_cache:premake
+	echo "TODO"
