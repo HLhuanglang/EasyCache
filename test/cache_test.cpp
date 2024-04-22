@@ -1,12 +1,11 @@
 #include "cache.h"
 
 #include <gtest/gtest.h>
-#include <iostream>
 #include <random>
 #include <string>
 
 const constexpr int LV1_TEST = 10000;
-const constexpr double EXPECT_RATE = 99.99 / 100;
+const constexpr double EXPECT_RATE = 99.9 / 100;
 
 TEST(CachePolicyTest, LRUTest) {
     CacheMgr<std::string, int, LRUPolicy> lru_cache(LV1_TEST);

@@ -40,16 +40,40 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/spdlog)
 # ---------------------------------------------------------------------------------------
 # EasyCache编译
 # ---------------------------------------------------------------------------------------
+set(EASYCACHE_SOURCES
+  easycache/lib/ini.cpp
+)
+set(LIB_NAME "easycache")
+add_library(${LIB_NAME} STATIC ${EASYCACHE_SOURCES})
+target_include_directories(${LIB_NAME}
+  PUBLIC ${CMAKE_SOURCE_DIR}/easycache/lib)
+target_link_libraries(${LIB_NAME} spdlog::spdlog)
 
 
+# ---------------------------------------------------------------------------------------
+# EasyCache编译服务端和客户端
+# ---------------------------------------------------------------------------------------
+option(BUILD_EXE "是否编译成可执行程序" OFF)
+set(SVR_NAME "cache_svr")
+set(CLI_NAME "cache_cli")
+if(BUILD_EXE)
+  add_executable(${SVR_NAME} easycache/cmd/cache_svr/cache_svr.cpp)
+  target_link_libraries(${SVR_NAME} ${LIB_NAME})
+  target_include_directories(${SVR_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/easycache/lib)
+  add_executable(${CLI_NAME} easycache/cmd/cache_cli/cache_cli.cpp)
+  target_link_libraries(${CLI_NAME} ${LIB_NAME})
+  target_include_directories(${SVR_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/easycache/lib)
+endif(BUILD_EXE)
+unset(SVR_NAME)
+unset(CLI_NAME)
 
 # ---------------------------------------------------------------------------------------
 # EasyCache库单元测试
 # ---------------------------------------------------------------------------------------
 file(GLOB_RECURSE EasyCache_UNITTEST_SOURCES "${CMAKE_SOURCE_DIR}/test/*.cpp")
 add_executable(EasyCacheUnitTest ${EasyCache_UNITTEST_SOURCES})
-target_include_directories(EasyCacheUnitTest PUBLIC ${CMAKE_SOURCE_DIR}/easycache)
-target_link_libraries(EasyCacheUnitTest ${EasyCache_LIB_NAME})
+target_include_directories(EasyCacheUnitTest PUBLIC ${CMAKE_SOURCE_DIR}/easycache/lib)
+target_link_libraries(EasyCacheUnitTest ${LIB_NAME})
 target_link_libraries(EasyCacheUnitTest gtest gtest_main)
 
 # ---------------------------------------------------------------------------------------
