@@ -30,12 +30,20 @@ endif()
 # ---------------------------------------------------------------------------------------
 # config thrid_party
 # ---------------------------------------------------------------------------------------
-# 编译gtest库
-add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/gtest)
-enable_testing()
+find_package(GTest 1.12.1 EXACT REQUIRED)
+if (GTest_FOUND)
+  message(STATUS "GTest found")
+endif()
 
-# 编译spdlog库
-add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/spdlog)
+find_package(spdlog 1.13.0 EXACT REQUIRED)
+if (spdlog_FOUND)
+  message(STATUS "spdlog found")
+endif()
+
+find_package(absl REQUIRED)
+if (absl_FOUND)
+  message(STATUS "absl found")
+endif()
 
 # ---------------------------------------------------------------------------------------
 # EasyCache编译
@@ -74,7 +82,7 @@ file(GLOB_RECURSE EasyCache_UNITTEST_SOURCES "${CMAKE_SOURCE_DIR}/test/*.cpp")
 add_executable(EasyCacheUnitTest ${EasyCache_UNITTEST_SOURCES})
 target_include_directories(EasyCacheUnitTest PUBLIC ${CMAKE_SOURCE_DIR}/easycache/lib)
 target_link_libraries(EasyCacheUnitTest ${LIB_NAME})
-target_link_libraries(EasyCacheUnitTest gtest gtest_main)
+target_link_libraries(EasyCacheUnitTest GTest::gtest GTest::gtest_main)
 
 # ---------------------------------------------------------------------------------------
 # EasyCache使用案例
