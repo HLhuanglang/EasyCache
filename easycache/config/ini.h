@@ -1,7 +1,5 @@
 #pragma once
 
-#include "singleton.h"
-
 #include <fstream>
 #include <map>
 #include <string>
@@ -18,14 +16,14 @@ const char *const k_crlf = "\n";
 using parse_data_t = std::pair<std::string, std::string>;
 
 using kv_t = std::map<std::string, std::string>;
-using ini_containder_t = std::map<std::string, kv_t>; // section-kv
+using ini_containder_t = std::map<std::string, kv_t>;  // section-kv
 
 enum class ini_datatype_e {
-    DATA_NONE,    // 空行
-    DATA_COMMENT, // 评论,使用;或者#开头
-    DATA_SECTION, // 段
-    DATA_KEY_VAL, // key-value
-    DATA_UNKNOWN  // 未知
+    DATA_NONE,     // 空行
+    DATA_COMMENT,  // 评论,使用;或者#开头
+    DATA_SECTION,  // 段
+    DATA_KEY_VAL,  // key-value
+    DATA_UNKNOWN   // 未知
 };
 
 // 存储ini数据
@@ -52,7 +50,7 @@ class INIFile {
 
  public:
     bool Init(const std::string &path);
-    result Get(const char *section, const char *key);
+    result TryGet(const char *section, const char *key);
 
  private:
     ini_datatype_e _parse_line(std::string line, parse_data_t &data);
@@ -63,15 +61,4 @@ class INIFile {
     std::ifstream m_file;
 };
 
-#define INI_INIT(path) Singleton<EasyCache::INIFile>::GetInstance()->Init(path)
-#define INI_GET(section, key) Singleton<EasyCache::INIFile>::GetInstance()->Get(section, key)
-
-// c++17 support inline variable
-// inline auto INI_INIT = [](const std::string &path) {
-//     return Singleton<EasyCache::INIFile>::GetInstance()->Init(path);
-// };
-// inline auto INI_GET = [](const char *section, const char *key) {
-//     return Singleton<EasyCache::INIFile>::GetInstance()->Get(section, key);
-// };
-
-} // namespace EasyCache
+}  // namespace EasyCache

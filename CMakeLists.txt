@@ -5,7 +5,9 @@ cmake_minimum_required(VERSION 3.6)
 # Start EasyCache project
 # ---------------------------------------------------------------------------------------
 # 项目名称-EasyCache
-project(EasyCache VERSION 1.0.0
+project(
+  EasyCache
+  VERSION 0.0.1
   DESCRIPTION "A cache library/server for C++"
   LANGUAGES CXX C)
 
@@ -22,41 +24,28 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 # 生成compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# 判断编译类型
-if(CMAKE_BUILD_TYPE AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
-  add_definitions("-DECACHE_DEBUG")
-endif()
-
 # ---------------------------------------------------------------------------------------
 # config thrid_party
 # ---------------------------------------------------------------------------------------
 find_package(GTest 1.12.1 EXACT REQUIRED)
-if (GTest_FOUND)
+if(GTest_FOUND)
   message(STATUS "GTest found")
 endif()
 
 find_package(spdlog 1.13.0 EXACT REQUIRED)
-if (spdlog_FOUND)
+if(spdlog_FOUND)
   message(STATUS "spdlog found")
-endif()
-
-find_package(absl REQUIRED)
-if (absl_FOUND)
-  message(STATUS "absl found")
 endif()
 
 # ---------------------------------------------------------------------------------------
 # EasyCache编译
 # ---------------------------------------------------------------------------------------
-set(EASYCACHE_SOURCES
-  easycache/lib/ini.cpp
-)
 set(LIB_NAME "easycache")
+file(GLOB_RECURSE EASYCACHE_SOURCES "${CMAKE_SOURCE_DIR}/easycache/*.cpp")
 add_library(${LIB_NAME} STATIC ${EASYCACHE_SOURCES})
-target_include_directories(${LIB_NAME}
-  PUBLIC ${CMAKE_SOURCE_DIR}/easycache/lib)
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/easycache)
 target_link_libraries(${LIB_NAME} spdlog::spdlog)
-
 
 # ---------------------------------------------------------------------------------------
 # EasyCache编译服务端和客户端
@@ -65,12 +54,12 @@ option(BUILD_EXE "是否编译成可执行程序" OFF)
 set(SVR_NAME "cache_svr")
 set(CLI_NAME "cache_cli")
 if(BUILD_EXE)
-  add_executable(${SVR_NAME} easycache/cmd/cache_svr/cache_svr.cpp)
+  add_executable(${SVR_NAME} cmd/cache_svr/cache_svr.cpp)
   target_link_libraries(${SVR_NAME} ${LIB_NAME})
-  target_include_directories(${SVR_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/easycache/lib)
-  add_executable(${CLI_NAME} easycache/cmd/cache_cli/cache_cli.cpp)
+  target_include_directories(${SVR_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+  add_executable(${CLI_NAME} cmd/cache_cli/cache_cli.cpp)
   target_link_libraries(${CLI_NAME} ${LIB_NAME})
-  target_include_directories(${SVR_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/easycache/lib)
+  target_include_directories(${SVR_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 endif(BUILD_EXE)
 unset(SVR_NAME)
 unset(CLI_NAME)
@@ -78,16 +67,13 @@ unset(CLI_NAME)
 # ---------------------------------------------------------------------------------------
 # EasyCache库单元测试
 # ---------------------------------------------------------------------------------------
-file(GLOB_RECURSE EasyCache_UNITTEST_SOURCES "${CMAKE_SOURCE_DIR}/test/*.cpp")
-add_executable(EasyCacheUnitTest ${EasyCache_UNITTEST_SOURCES})
-target_include_directories(EasyCacheUnitTest PUBLIC ${CMAKE_SOURCE_DIR}/easycache/lib)
-target_link_libraries(EasyCacheUnitTest ${LIB_NAME})
-target_link_libraries(EasyCacheUnitTest GTest::gtest GTest::gtest_main)
-
-# ---------------------------------------------------------------------------------------
-# EasyCache使用案例
-# ---------------------------------------------------------------------------------------
-option(BUILD_WITH_EXAMPLES "是否编译examples" OFF)
-if (BUILD_WITH_EXAMPLES)
-  add_subdirectory(examples)
+option(BUILD_TEST "是否编译测试用例" OFF)
+if(BUILD_TEST)
+  file(GLOB_RECURSE EasyCache_UNITTEST_SOURCES "${CMAKE_SOURCE_DIR}/test/*.cpp")
+  add_executable(EasyCacheUnitTest ${EasyCache_UNITTEST_SOURCES})
+  target_include_directories(
+    EasyCacheUnitTest PUBLIC ${CMAKE_SOURCE_DIR}/include
+                             ${CMAKE_SOURCE_DIR}/easycache)
+  target_link_libraries(EasyCacheUnitTest ${LIB_NAME} GTest::gtest
+                        GTest::gtest_main)
 endif()

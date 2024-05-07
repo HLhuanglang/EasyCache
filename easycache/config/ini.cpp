@@ -1,7 +1,9 @@
 #include "ini.h"
-#include "log.h"
+
 #include <cstdio>
 #include <cstring>
+
+#include "log/log.h"
 
 using namespace EasyCache;
 
@@ -71,8 +73,8 @@ bool INIFile::Init(const std::string &path) {
     return true;
 }
 
-INIFile::result INIFile::Get(const char *section, const char *key) {
-    auto _section = m_data.find(section); // section-kv
+INIFile::result INIFile::TryGet(const char *section, const char *key) {
+    auto _section = m_data.find(section);  // section-kv
     if (_section != m_data.end()) {
         auto _kv = _section->second.find(key);
         if (_kv != _section->second.end()) {

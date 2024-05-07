@@ -15,4 +15,4 @@ class Singleton {
     Singleton &operator=(const Singleton &rhs) = delete;
 };
 
-} // namespace EasyCache
+}  // namespace EasyCache

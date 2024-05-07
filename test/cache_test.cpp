@@ -1,8 +1,11 @@
-#include "cache.h"
+#include "cache/cache.h"
 
 #include <gtest/gtest.h>
+
 #include <random>
 #include <string>
+
+using namespace EasyCache;
 
 const constexpr int LV1_TEST = 10000;
 const constexpr double EXPECT_RATE = 99.9 / 100;
@@ -13,9 +16,9 @@ TEST(CachePolicyTest, LRUTest) {
         lru_cache.Set("Holo" + std::to_string(i), i);
     }
 
-    static std::random_device rd;                                // 非确定性随机数生成设备
-    static std::mt19937 gen(rd());                               // 伪随机数产生器，用于产生高性能的随机数
-    static std::uniform_int_distribution<int> dist(0, LV1_TEST); // 随机数分布
+    static std::random_device rd;                                 // 非确定性随机数生成设备
+    static std::mt19937 gen(rd());                                // 伪随机数产生器，用于产生高性能的随机数
+    static std::uniform_int_distribution<int> dist(0, LV1_TEST);  // 随机数分布
 
     int miss = 0;
     int hit = 0;
@@ -41,9 +44,9 @@ TEST(CachePolicyTest, FIFOTest) {
         fifo_cache.Set("Holo" + std::to_string(i), i);
     }
 
-    static std::random_device rd;                                // 非确定性随机数生成设备
-    static std::mt19937 gen(rd());                               // 伪随机数产生器，用于产生高性能的随机数
-    static std::uniform_int_distribution<int> dist(0, LV1_TEST); // 随机数分布
+    static std::random_device rd;                                 // 非确定性随机数生成设备
+    static std::mt19937 gen(rd());                                // 伪随机数产生器，用于产生高性能的随机数
+    static std::uniform_int_distribution<int> dist(0, LV1_TEST);  // 随机数分布
 
     int miss = 0;
     int hit = 0;

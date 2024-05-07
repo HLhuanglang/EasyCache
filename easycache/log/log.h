@@ -1,7 +1,6 @@
-#ifndef __EASYCACHE_LOG_H
-#define __EASYCACHE_LOG_H
+#pragma once
 
-#include "spdlog/common.h"
+#include <spdlog/common.h>
 #include <spdlog/spdlog.h>
 
 namespace EasyCache {
@@ -29,6 +28,20 @@ inline void LogInit(spdlog::level::level_enum lv) {
     spdlog::set_pattern("[%D %H:%M:%S.%e][%L][%t][%s:%# %!] %^%v%$");
 }
 
-} // namespace EasyCache
+inline spdlog::level::level_enum GetLogLevelByString(const std::string &level) {
+    if (level == "trace") {
+        return spdlog::level::trace;
+    } else if (level == "debug") {
+        return spdlog::level::debug;
+    } else if (level == "info") {
+        return spdlog::level::info;
+    } else if (level == "warn") {
+        return spdlog::level::warn;
+    } else if (level == "error") {
+        return spdlog::level::err;
+    } else {
+        return spdlog::level::info;
+    }
+}
 
-#endif // !__EASYCACHE_LOG_H
+}  // namespace EasyCache
