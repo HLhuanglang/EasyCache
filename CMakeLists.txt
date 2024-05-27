@@ -27,12 +27,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # ---------------------------------------------------------------------------------------
 # config thrid_party
 # ---------------------------------------------------------------------------------------
-find_package(GTest 1.12.1 EXACT REQUIRED)
+find_package(GTest REQUIRED)
 if(GTest_FOUND)
   message(STATUS "GTest found")
 endif()
 
-find_package(spdlog 1.13.0 EXACT REQUIRED)
+find_package(spdlog REQUIRED)
 if(spdlog_FOUND)
   message(STATUS "spdlog found")
 endif()
